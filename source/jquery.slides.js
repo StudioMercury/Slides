@@ -85,6 +85,7 @@
       $element = $(this.element);
       this.data = $.data(this);
       $.data(this, "animating", false);
+      
       // START ADD BY KIRK
       if( $element.children().not(".slidesjs-navigation", $element).length < 3){
           this.originalSize = 2;
@@ -93,6 +94,7 @@
           this.originalSize = $element.children().not(".slidesjs-navigation", $element).length;
       }
       // END ADD BY KIRK
+      
       $.data(this, "total", $element.children().not(".slidesjs-navigation", $element).length);
       $.data(this, "current", this.options.start - 1);
       $.data(this, "vendorPrefix", this._getVendorPrefix());
@@ -202,14 +204,21 @@
         pagination = $("<ul>", {
           "class": "slidesjs-pagination"
         }).appendTo($element);
-                   
         $.each(new Array(this.originalSize), function(i) {
-          
           var paginationItem, paginationLink;
           paginationItem = $("<li>", {
             "class": "slidesjs-pagination-item"
           }).appendTo(pagination);
-
+          paginationLink = $("<a>", {
+            href: "#",
+            "data-slidesjs-item": i,
+            html: i + 1
+          }).appendTo(paginationItem);
+          return paginationLink.click(function(e) {
+            e.preventDefault();
+            _this.stop(true);
+            return _this.goto(($(e.currentTarget).attr("data-slidesjs-item") * 1) + 1);
+          });
         });
       }
       $(window).bind("resize", function() {
@@ -226,6 +235,8 @@
       $element = $(this.element);
       this.data = $.data(this);
       current = number > -1 ? number : this.data.current;
+      if(this.originalSize == 2 && current == 2){ current = 0;}
+      if(this.originalSize == 2 && current == 3){ current = 1;}
       $(".active", $element).removeClass("active");
       return $("li:eq(" + current + ") a", $element).addClass("active");
     };
@@ -340,7 +351,6 @@
       $.data(this, "touchtimer", Number(new Date()));
       $.data(this, "touchstartx", touches.pageX);
       $.data(this, "touchstarty", touches.pageY);
-      this.stop();
       //return e.stopPropagation();
     };
     Plugin.prototype._touchend = function(e) {
